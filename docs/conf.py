@@ -15,7 +15,7 @@ release = '0.1'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "myst_parser",
+#    "myst_parser",
     "myst_nb",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
