@@ -11,6 +11,7 @@ __all__ = [
     'binarize_data',
     'diffOmeter',
     'run_stemFinder',
+    'gene_set_score',
     'generate_scRNAseq_test_data',
     'sf_norm_hvg_scale_pca',
     'count_high_expr_genes',
@@ -73,11 +74,16 @@ def _genes_present(adata, genes, label):
     return present
 
 
-def _binarized(adata, genes, threshold):
+def _expression(adata, genes, layer=None):
+    """Dense (cells x genes) expression from adata.X or adata.layers[layer]."""
+    view = adata[:, genes]
+    X = view.X if layer is None else view.layers[layer]
+    return X.toarray() if scipy.sparse.issparse(X) else np.asarray(X)
+
+
+def _binarized(adata, genes, threshold, layer=None):
     """Dense boolean (cells x genes) matrix of expression > threshold."""
-    X = adata[:, genes].X
-    X = X.toarray() if scipy.sparse.issparse(X) else np.asarray(X)
-    return X > threshold
+    return _expression(adata, genes, layer) > threshold
 
 
 def _neighbor_graph(adata, neighbors_key=None):
@@ -129,7 +135,7 @@ def diffOmeter(adata, genes, threshold, weight_by='equal', include_self=True, ne
     expressed = _binarized(adata, genes, threshold)
 
     if weight_by == 'expression':
-        gene_weights = np.asarray(adata[:, genes].X.mean(axis=0)).ravel()
+        gene_weights = _expression(adata, genes).mean(axis=0)
     elif weight_by == 'presence':
         gene_weights = expressed.mean(axis=0)
     else:
@@ -145,25 +151,32 @@ def diffOmeter(adata, genes, threshold, weight_by='equal', include_self=True, ne
     adata.obs['diffOmeter'] = impurities @ gene_weights / np.sum(gene_weights)
 
 
-def run_stemFinder(adata, markers, thresh=0.0, neighbors_key=None):
+def run_stemFinder(adata, markers, thresh=0.0, method='gini', layer=None, neighbors_key=None):
     """
     Compute the 'stemFinder' scores for each cell in an anndata object.
     
-    Port of run_stemFinder (method = 'gini') from the R package (https://github.com/CahanLab/stemfinder). For each 
-    cell and marker gene, expression is binarized at `thresh` and p_g is the fraction of the cell's kNN neighbors 
-    (excluding the cell itself) whose binarized state matches the cell's. The raw score is the sum over markers of 
-    p_g * (1 - p_g): heterogeneous marker expression within a neighborhood, which is high in less differentiated cells.
+    Port of run_stemFinder from the R package (https://github.com/CahanLab/stemfinder). Each method measures how 
+    heterogeneous the expression of marker genes (typically S and G2M phase cell cycle genes, see cell_cycle_genes) 
+    is within each cell's kNN neighborhood, which is high in less differentiated cells:
     
-    As in R, the input should be scaled expression (e.g. sc.pp.scale, or sf_norm_hvg_scale_pca(gene_scale=True)), so 
-    that the default threshold of 0 splits each gene at its mean. The markers are typically S and G2M phase cell 
-    cycle genes. The neighborhood size (k - 1) is read from the kNN graph built by sc.pp.neighbors.
+    - 'gini' (default): expression is binarized at `thresh` and p_g is the fraction of the cell's neighbors 
+      (excluding the cell itself) whose binarized state matches the cell's. The raw score is the sum over markers 
+      of p_g * (1 - p_g). As in R, use scaled expression (e.g. sc.pp.scale, or sf_norm_hvg_scale_pca(gene_scale=True)), 
+      so that the default threshold of 0 splits each gene at its mean.
+    - 'stdev' / 'variance': the sum over markers of the sample standard deviation / variance of expression across 
+      the neighborhood including the cell itself. R uses log-normalized (not scaled) expression for these methods; 
+      pass the layer that holds it. `thresh` is not used.
+    
+    The neighborhood size is read from the kNN graph built by sc.pp.neighbors.
     
     Args:
         adata (anndata.AnnData): The annotated data matrix of shape (n_obs, n_vars), with a kNN graph from 
                                  sc.pp.neighbors.
         markers (list of str): Marker genes. Markers absent from adata.var_names are ignored with a warning. As in 
                                R, a marker listed twice counts twice.
-        thresh (float, optional): The threshold value used to binarize gene expression data. Defaults to 0.
+        thresh (float, optional): The threshold used to binarize expression for method 'gini'. Defaults to 0.
+        method (str, optional): 'gini', 'stdev', or 'variance'. Defaults to 'gini'.
+        layer (str, optional): Layer holding the expression to use instead of adata.X. Defaults to None.
         neighbors_key (str, optional): Key of the neighbors graph, as passed to sc.pp.neighbors(key_added=...). 
                                        Defaults to the graph in adata.obsp['distances'].
                                        
@@ -172,18 +185,47 @@ def run_stemFinder(adata, markers, thresh=0.0, neighbors_key=None):
               'stemFinder_raw': raw score; higher = less differentiated.
               'stemFinder': 1 - stemFinder_raw / max(stemFinder_raw); lower = less differentiated (like pseudotime).
     """
+    if method not in ['gini', 'stdev', 'variance']:
+        raise ValueError("Invalid value for 'method'. Expected one of 'gini', 'stdev', 'variance'.")
+
     markers = _genes_present(adata, markers, "markers")
     nn = _neighbor_graph(adata, neighbors_key)
-    n_neighbors = np.asarray(nn.sum(axis=1)).ravel()
 
-    # fraction of each cell's neighbors above threshold, per marker
-    q = (nn @ _binarized(adata, markers, thresh).astype(float)) / n_neighbors[:, None]
-    # p * (1 - p) is symmetric in p and 1 - p, so it does not matter whether p counts the neighbors that
-    # match the cell's own state (as in R) or those above threshold
-    raw = np.sum(q * (1 - q), axis=1)
+    if method == 'gini':
+        n = np.asarray(nn.sum(axis=1)).ravel()
+        # number of each cell's neighbors above threshold, per marker
+        m = nn @ _binarized(adata, markers, thresh, layer).astype(float)
+        # sum over markers of p * (1 - p) with p = m / n. This is symmetric in p and 1 - p, so it does not matter
+        # whether p counts the neighbors that match the cell's own state (as in R) or those above threshold.
+        # Summing the integer numerators keeps equal scores bit-identical, so rank-based metrics see them as ties.
+        raw = np.sum(m * (n[:, None] - m), axis=1) / n**2
+    else:
+        nn = nn + scipy.sparse.identity(adata.n_obs, format='csr')
+        n = np.asarray(nn.sum(axis=1)).ravel()[:, None]
+        X = _expression(adata, markers, layer)
+        mean = (nn @ X) / n
+        variance = np.clip(((nn @ X**2) / n - mean**2) * n / (n - 1), 0, None)
+        raw = np.sum(variance if method == 'variance' else np.sqrt(variance), axis=1)
 
     adata.obs['stemFinder_raw'] = raw
     adata.obs['stemFinder'] = 1 - raw / raw.max()
+
+
+def gene_set_score(adata, genes, layer=None, key_added='gene_set_score'):
+    """
+    Compute the mean expression of a gene set in each cell (port of gene_set_score from the R package).
+    
+    Args:
+        adata (anndata.AnnData): The annotated data matrix of shape (n_obs, n_vars). R uses log-normalized expression.
+        genes (list of str): Genes in the set. Genes absent from adata.var_names are ignored with a warning.
+        layer (str, optional): Layer holding the expression to use instead of adata.X. Defaults to None.
+        key_added (str, optional): Name of the .obs column for the score. Defaults to 'gene_set_score'.
+    
+    Returns:
+        None: The score is stored in adata.obs[key_added].
+    """
+    genes = _genes_present(adata, genes, "genes")
+    adata.obs[key_added] = _expression(adata, genes, layer).mean(axis=1)
 
 
 def generate_scRNAseq_test_data(n_cells=300, n_genes=50, lambda_val=2, dropout_rate=0.6, 

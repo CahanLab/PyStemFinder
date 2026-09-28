@@ -5,6 +5,38 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
+## [0.3.0] - 2026-09-28
+
+### Added
+- `run_stemFinder(method='stdev' | 'variance')`, ported from R: the summed
+  sample sd / variance of marker expression across each neighborhood
+  (including the cell). R uses log-normalized data for these, so
+  `run_stemFinder` takes a `layer` argument.
+- `compute_performance_single` and `pct_recover`, ported from R, for
+  benchmarking scores against ground truth (single-cell Spearman, phenotype
+  correlation, AUC; optional competitor method).
+- `gene_set_score`, ported from R.
+- `cell_cycle_genes(species, phase)` and `transcription_factors(species)`
+  with the S/G2M and TF lists bundled with the R package (human, mouse,
+  C. elegans).
+- Parity tests: all three methods match R to 1e-12 on the bone marrow data,
+  and so do the metrics wherever R computes them correctly (see below).
+
+### Changed
+- The gini score is summed from integer counts, so mathematically equal scores
+  are bit-identical and tie in rank-based metrics. R's own single-cell
+  Spearman on the vignette data (0.742814) differs from the tie-exact value
+  (0.742816) because round-off splits some ties.
+
+### Differences from R
+- AUC uses every (most, least differentiated) pair. R's `auc_probability`
+  receives 0/1 numeric labels, so `scores[labels]` repeats the first positive
+  cell's score and the AUC compares only that one cell with the negatives
+  (vignette: R 0.9725, exact 0.9662; CCAT: R 0.9299, exact 0.9530).
+- The phenotype correlation defaults to Spearman, as its name says. R's
+  `cor.test` call uses the default Pearson (vignette: R 0.888, Spearman
+  0.865); pass `pheno_method='pearson'` to reproduce R.
+
 ## [0.2.1] - 2026-09-28
 
 ### Added
@@ -52,6 +84,7 @@ minor releases may change the API.
 Initial Python port: `run_stemFinder` (Gini method), `diffOmeter`, toy data
 generator, and preprocessing helpers.
 
+[0.3.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/pcahan1/PyStemFinder/releases/tag/v0.1.0

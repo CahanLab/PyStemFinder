@@ -15,6 +15,7 @@ setup(name='PyStemFinder',
       author_email='patrick.cahan@jhmi.ed',
       license='MIT',
       packages=['PyStemFinder'],
+      package_data={'PyStemFinder': ['data/*.txt']},
       install_requires=[
           'pandas',
           'numpy',

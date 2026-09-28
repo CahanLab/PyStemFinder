@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+import pytest
 
 import PyStemFinder as psf
 
@@ -62,3 +63,19 @@ def test_count_high_expr_genes(toy):
     psf.count_high_expr_genes(toy, ["g0", "g1", "not_a_gene"], 0, "n_on")
 
     assert toy.obs["n_on"].tolist() == [1, 2, 1, 1]
+
+
+def test_gene_set_score_is_mean_expression(toy):
+    with pytest.warns(UserWarning, match="not_a_gene"):
+        psf.gene_set_score(toy, ["g0", "g1", "not_a_gene"])
+
+    np.testing.assert_allclose(toy.obs["gene_set_score"], [1.0, 2.0, 1.0, 0.5])
+
+
+def test_gene_set_score_layer_and_key(toy_dense):
+    toy_dense.layers["lognorm"] = toy_dense.X.copy()
+    toy_dense.X = np.zeros_like(toy_dense.X)
+
+    psf.gene_set_score(toy_dense, ["g0", "g1"], layer="lognorm", key_added="cc")
+
+    np.testing.assert_allclose(toy_dense.obs["cc"], [1.0, 2.0, 1.0, 0.5])
