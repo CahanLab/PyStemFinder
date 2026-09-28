@@ -22,7 +22,7 @@ def binary_gini_impurity(labels):
     Compute the Gini impurity of a binary list of labels.
     
     Args:
-        labels (List[bool or int]): A list of binary labels (0 or 1, True or False).
+        labels (list of bool or int): A list of binary labels (0 or 1, True or False).
         
     Returns:
         float: The computed Gini impurity.

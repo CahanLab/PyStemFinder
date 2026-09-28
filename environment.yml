@@ -1,0 +1,16 @@
+# Conda environment for running PyStemFinder and its tutorials.
+#   conda env create -f environment.yml
+#   conda activate pystemfinder
+#   pip install -e .
+name: pystemfinder
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - scanpy
+  - python-igraph
+  - leidenalg
+  - seaborn
+  - jupyterlab
+  - ipykernel
+  - pytest

@@ -3,28 +3,47 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import re
+from pathlib import Path
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'PyStemFinder'
-copyright = '2023, Patrick Cahan, Kathleen Noller'
+copyright = '2023-2026, Patrick Cahan, Kathleen Noller'
 author = 'Patrick Cahan, Kathleen Noller'
-release = '0.1'
+_version_file = Path(__file__).parent.parent / 'PyStemFinder' / '_version.py'
+release = re.search(r'__version__ = "(.+)"', _version_file.read_text()).group(1)
+version = release
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-#    "myst_parser",
     "myst_nb",
+    "sphinx.ext.autodoc",
     "sphinx_copybutton",
     "sphinx_inline_tabs",
     "sphinx_design",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon"
 ]
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
+    'anndata': ('https://anndata.readthedocs.io/en/stable', None),
+    'scanpy': ('https://scanpy.readthedocs.io/en/stable', None),
+}
+napoleon_preprocess_types = True
+napoleon_type_aliases = {'array-like': ':term:`array-like <array_like>`'}
+
+# Notebooks are stored with their outputs; do not re-execute them when building the docs
+nb_execution_mode = 'off'
 
 myst_enable_extensions = [
     "amsmath",
@@ -41,7 +60,6 @@ myst_enable_extensions = [
     "strikethrough",
     "substitution",
     "tasklist",
-    "html_image"
 ]
 
 
@@ -56,9 +74,3 @@ html_theme_options = {
     "dark_logo": "stemFinder_logo_dark.png",
     "sidebar_hide_name": True
 }
-
-
-
-
-
-

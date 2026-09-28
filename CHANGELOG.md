@@ -5,6 +5,23 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
+## [0.3.1] - 2026-09-28
+
+### Added
+- Documentation: the table of contents works again, plus an API reference, a
+  changelog page, and a notebook that reproduces the R vignette and its
+  benchmarks (`docs/notebooks/benchmarking.ipynb`).
+- `environment.yml` for a portable conda environment (replaces the exported
+  personal environment files).
+- README with installation, usage, differences from R, and citation.
+
+### Changed
+- `setup.py`: dependencies trimmed to what the package imports (matplotlib
+  and seaborn dropped), `python_requires >= 3.9`, README as long
+  description, fixed author email.
+- Read the Docs installs the package so the API reference can be generated;
+  Sphinx toolchain updated to current releases.
+
 ## [0.3.0] - 2026-09-28
 
 ### Added
@@ -84,6 +101,7 @@ minor releases may change the API.
 Initial Python port: `run_stemFinder` (Gini method), `diffOmeter`, toy data
 generator, and preprocessing helpers.
 
+[0.3.1]: https://github.com/pcahan1/PyStemFinder/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.1.0...v0.2.0
