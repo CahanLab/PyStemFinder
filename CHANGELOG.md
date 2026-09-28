@@ -5,6 +5,20 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
+## [0.2.1] - 2026-09-28
+
+### Added
+- R parity test (`tests/test_r_parity.py`) on the R vignette's Tabula Muris
+  bone marrow data (3,427 cells, R's own kNN graph). `run_stemFinder` matches
+  R's published scores (`bmmc_sF_results.csv`) to 1e-12. The fixture
+  `tests/data/bmmc_r_reference.h5ad` is rebuilt with
+  `tests/data/export_bmmc_reference.R` and `tests/data/make_bmmc_fixture.py`.
+
+### Fixed
+- A marker listed twice counts twice again, as in R (0.2.0 removed repeats).
+  The R vignette's mouse S + G2M list contains E2f8 twice, so the published
+  scores depend on this.
+
 ## [0.2.0] - 2026-09-28
 
 ### Changed
@@ -38,5 +52,6 @@ minor releases may change the API.
 Initial Python port: `run_stemFinder` (Gini method), `diffOmeter`, toy data
 generator, and preprocessing helpers.
 
+[0.2.1]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/pcahan1/PyStemFinder/releases/tag/v0.1.0

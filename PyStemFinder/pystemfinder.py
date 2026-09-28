@@ -53,8 +53,11 @@ def binarize_data(data, threshold):
     return (data > threshold).astype(int)
 
 def _genes_present(adata, genes, label):
-    """Return the unique `genes` found in adata.var_names, warning about any that are absent."""
-    genes = list(dict.fromkeys(genes))
+    """Return `genes` that are in adata.var_names, warning about any that are absent.
+
+    Repeated genes are kept, as in R, so they are counted once per occurrence.
+    """
+    genes = list(genes)
     var_names = set(adata.var_names)
     present = [g for g in genes if g in var_names]
     missing = [g for g in genes if g not in var_names]
@@ -158,7 +161,8 @@ def run_stemFinder(adata, markers, thresh=0.0, neighbors_key=None):
     Args:
         adata (anndata.AnnData): The annotated data matrix of shape (n_obs, n_vars), with a kNN graph from 
                                  sc.pp.neighbors.
-        markers (list of str): Marker genes. Markers absent from adata.var_names are ignored with a warning.
+        markers (list of str): Marker genes. Markers absent from adata.var_names are ignored with a warning. As in 
+                               R, a marker listed twice counts twice.
         thresh (float, optional): The threshold value used to binarize gene expression data. Defaults to 0.
         neighbors_key (str, optional): Key of the neighbors graph, as passed to sc.pp.neighbors(key_added=...). 
                                        Defaults to the graph in adata.obsp['distances'].
