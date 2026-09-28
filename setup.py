@@ -1,7 +1,14 @@
+import os
+import re
+
 from setuptools import setup
 
+here = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(here, 'PyStemFinder', '_version.py')) as f:
+    version = re.search(r'__version__ = "(.+)"', f.read()).group(1)
+
 setup(name='PyStemFinder',
-      version='0.1',
+      version=version,
       description='Tools to infer extent of differentiation and cell fate potential from single cell omics data',
       url='http://github.com/pcahan1/PyStemFinder/',
       author='Kathleen Noller, Patrick Cahan',
