@@ -12,8 +12,7 @@ Contents (3427 Tabula Muris bone marrow cells x 91 mouse S/G2M cell cycle genes)
     obsp['distances'] Seurat RNA_nn kNN graph (k = 59, each cell includes itself)
     obs               Phenotype, Ground_truth, R scores 'R_<method>_stemFinder[_raw]',
                       and the competitor 'ccat_invert' / 'CytoTRACE_invert' scores
-    uns               'R_markers': the 92 markers R used (E2f8 is in both the S and G2M lists,
-                      so it is counted twice), R performance metrics, and R session versions
+    uns               'R_markers': the markers R used, R performance metrics, and R session versions
 """
 import sys
 from pathlib import Path
@@ -34,7 +33,6 @@ obs[["ccat_invert", "CytoTRACE_invert"]] = competitor[["ccat_invert", "CytoTRACE
 
 markers = (export / "markers.txt").read_text().split()
 genes = list(dict.fromkeys(markers))
-# the export has two identical E2f8 columns (pandas reads the second as E2f8.1); keep the first
 scale_data = pd.read_csv(export / "scale_data.csv", index_col=0).loc[obs.index, genes]
 data = pd.read_csv(export / "data.csv", index_col=0).loc[obs.index, genes]
 

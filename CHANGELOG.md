@@ -5,6 +5,22 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
+## [0.4.0] - 2026-09-29
+
+### Changed
+- **Breaking:** E2f8 (mouse) and E2F8 (human) are S phase genes only. They
+  are removed from the bundled G2M lists; the R package lists them under both
+  phases, while Seurat's `cc.genes` lists them under S.
+  `cell_cycle_genes(phase='both')` lists each gene once, which also covers the
+  11 genes shared by the C. elegans S and G2M lists.
+- **Breaking:** `run_stemFinder`, `diffOmeter`, and `gene_set_score` count a
+  repeated gene once, with a warning. R counts it once per occurrence.
+- Scores on the R vignette's bone marrow data therefore differ slightly from
+  the published ones, which count E2f8 twice (rank correlation 0.9999, maximum
+  difference 0.0065 in `stemFinder`). The R parity reference
+  (`tests/data/bmmc_r_reference.h5ad`) was regenerated in R with E2f8 counted
+  once, and Python still matches it to 1e-12.
+
 ## [0.3.2] - 2026-09-29
 
 ### Added
@@ -113,6 +129,7 @@ minor releases may change the API.
 Initial Python port: `run_stemFinder` (Gini method), `diffOmeter`, toy data
 generator, and preprocessing helpers.
 
+[0.4.0]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/CahanLab/PyStemFinder/compare/v0.2.1...v0.3.0

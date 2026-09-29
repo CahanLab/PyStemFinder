@@ -5,6 +5,11 @@
 # graph) and outputs (scores for each method) as CSV files. Then run
 # make_bmmc_fixture.py to pack them into bmmc_r_reference.h5ad.
 #
+# One deliberate difference from the vignette: E2f8, which is on both the S and
+# the G2M list, is used once (unique()), as in PyStemFinder. With the vignette's
+# list, which counts it twice, R's scores are identical to the published
+# https://cnobjects.s3.amazonaws.com/stemFinder/bmmc_sF_results.csv.
+#
 # Usage:
 #   Rscript export_bmmc_reference.R <stemfinder R repo> <MurineBoneMarrow10X_GSE109774.rds> <out dir>
 #
@@ -26,7 +31,7 @@ for (f in c("s_genes_mouse.rda", "g2m_genes_mouse.rda")) load(file.path(repo, "d
 adata <- readRDS(rds)
 
 # --- vignette steps -----------------------------------------------------------
-cell_cycle_genes <- c(s_genes_mouse, g2m_genes_mouse)[c(s_genes_mouse, g2m_genes_mouse) %in% rownames(adata)]
+cell_cycle_genes <- unique(c(s_genes_mouse, g2m_genes_mouse)[c(s_genes_mouse, g2m_genes_mouse) %in% rownames(adata)])
 VariableFeatures(adata) <- VariableFeatures(adata)[!(VariableFeatures(adata) %in% cell_cycle_genes)]
 adata <- RunPCA(adata, verbose = FALSE)
 pcs <- 32

@@ -1,4 +1,9 @@
-"""Gene lists bundled with the R stemFinder package (https://github.com/CahanLab/stemfinder, data/)."""
+"""Gene lists bundled with the R stemFinder package (https://github.com/CahanLab/stemfinder, data/).
+
+The files in PyStemFinder/data are copies of the R package's lists, except that E2f8 (mouse) and E2F8 (human)
+are removed from the G2M lists. The R package lists them under both S and G2M; they are S phase genes, as in
+Seurat's cc.genes.
+"""
 from importlib.resources import files
 
 __all__ = ['cell_cycle_genes', 'transcription_factors']
@@ -21,9 +26,9 @@ def cell_cycle_genes(species='mouse', phase='both'):
     """
     S and G2M phase cell cycle genes, the standard stemFinder markers.
     
-    With phase='both', returns the S genes followed by the G2M genes, like c(s_genes_mouse, g2m_genes_mouse) in the 
-    R vignette. Genes on both lists (E2f8 in mouse, E2F8 in human, 11 genes in C. elegans) therefore appear twice 
-    and count twice in run_stemFinder, as in R. Use list(dict.fromkeys(genes)) to drop the repeats.
+    With phase='both', returns the S genes followed by the G2M genes that are not also S genes, so each gene is 
+    listed once. (The R vignette's c(s_genes_mouse, g2m_genes_mouse) lists E2f8 twice; the R package's C. elegans 
+    lists share 11 genes.)
     
     Args:
         species (str, optional): 'human', 'mouse', or 'celegans'. Defaults to 'mouse'.
@@ -37,7 +42,7 @@ def cell_cycle_genes(species='mouse', phase='both'):
         raise ValueError("Invalid value for 'phase'. Expected one of 'S', 'G2M', 'both'.")
     s = _read(f's_genes_{suffix}') if phase in ['S', 'both'] else []
     g2m = _read(f'g2m_genes_{suffix}') if phase in ['G2M', 'both'] else []
-    return s + g2m
+    return list(dict.fromkeys(s + g2m))
 
 
 def transcription_factors(species='mouse'):

@@ -40,7 +40,6 @@ Tpx2
 Kif11
 Cenpa
 Cks1b
-E2f8
 Aurka
 Nuf2
 Mki67

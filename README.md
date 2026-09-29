@@ -62,6 +62,10 @@ R vignette (`benchmarking.ipynb`).
 - The phenotype-level correlation is Spearman, as its name says; R's uses Pearson. Pass
   `pheno_method="pearson"` to reproduce R's value.
 - `run_stemFinder` reads the neighborhood size from the kNN graph, so it takes no `k` argument.
+- E2f8 (E2F8 in human) is an S phase gene only. The R package also lists it under G2M, so the R
+  vignette counts it twice, and R counts any repeated marker once per occurrence; PyStemFinder counts
+  each marker once. Scores on the vignette's data therefore differ slightly from the published ones
+  (rank correlation 0.9999).
 
 See [CHANGELOG.md](CHANGELOG.md) for details.
 

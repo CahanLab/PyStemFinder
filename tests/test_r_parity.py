@@ -1,8 +1,8 @@
 """Parity with the R stemFinder package on the R vignette's Tabula Muris bone marrow data.
 
 tests/data/bmmc_r_reference.h5ad holds R's inputs (scaled marker expression and Seurat's kNN graph) and
-R's outputs; see tests/data/export_bmmc_reference.R. R's gini scores there are identical to the published
-https://cnobjects.s3.amazonaws.com/stemFinder/bmmc_sF_results.csv.
+R's outputs; see tests/data/export_bmmc_reference.R. Both sides use the 91 mouse cell cycle genes with E2f8
+counted once, so R's scores differ slightly from the vignette's published ones, which count it twice.
 """
 from pathlib import Path
 
@@ -36,7 +36,10 @@ def test_dispersion_scores_match_r(bmmc, method):
     np.testing.assert_allclose(bmmc.obs["stemFinder"], bmmc.obs[f"R_{method}_stemFinder"], rtol=1e-12, atol=1e-12)
 
 
-def test_bundled_mouse_cell_cycle_genes_reproduce_r_vignette(bmmc):
+def test_bundled_mouse_cell_cycle_genes_are_the_r_markers(bmmc):
+    # R: unique(c(s_genes_mouse, g2m_genes_mouse)), all of which are in the data
+    assert psf.cell_cycle_genes("mouse") == list(bmmc.uns["R_markers"])
+
     psf.run_stemFinder(bmmc, markers=psf.cell_cycle_genes("mouse"))
 
     np.testing.assert_allclose(bmmc.obs["stemFinder_raw"], bmmc.obs["R_gini_stemFinder_raw"], rtol=1e-12)
@@ -49,9 +52,9 @@ def test_performance_metrics_match_r(bmmc):
     # R's "phenotypic Spearman" is cor.test's default method, Pearson
     result = psf.compute_performance_single(bmmc, pheno_method="pearson")
 
-    # R: cor.test(<these scores>, Ground_truth, method = "spearman"). R's in-session value, 0.742814434, differs by
+    # R: cor.test(<these scores>, Ground_truth, method = "spearman"). R's in-session value, 0.741172286, differs by
     # 1e-6 because round-off in R's sums splits some tied scores, which the 15-digit export then re-ties.
-    assert result.loc["stemFinder", "Spearman_SingleCell"] == pytest.approx(0.7428152443282, rel=1e-12)
+    assert result.loc["stemFinder", "Spearman_SingleCell"] == pytest.approx(0.741173472392783, rel=1e-12)
     assert result.loc["stemFinder", "Spearman_Pheno"] == pytest.approx(r["Spearman_Pheno"], rel=1e-12)
     assert psf.pct_recover(bmmc) == pytest.approx(r["pct_recover"], rel=1e-12)
 
@@ -63,7 +66,7 @@ def test_equal_scores_tie_exactly(bmmc):
 
     result = psf.compute_performance_single(bmmc)
 
-    assert result.loc["stemFinder", "Spearman_SingleCell"] == pytest.approx(0.74281573104305, rel=1e-12)
+    assert result.loc["stemFinder", "Spearman_SingleCell"] == pytest.approx(0.741173311223115, rel=1e-12)
 
 
 def test_auc_and_spearman_pheno_are_exact(bmmc):
@@ -74,7 +77,7 @@ def test_auc_and_spearman_pheno_are_exact(bmmc):
 
     result = psf.compute_performance_single(bmmc, competitor_key="ccat_invert", competitor_inverted=True)
 
-    assert result.loc["stemFinder", "AUC"] == pytest.approx(0.966230824313531, rel=1e-12)
+    assert result.loc["stemFinder", "AUC"] == pytest.approx(0.966258365694456, rel=1e-12)
     assert result.loc["stemFinder", "Spearman_Pheno"] == pytest.approx(0.865048975764109, rel=1e-12)
     np.testing.assert_allclose(
         result.loc["ccat_invert"], [0.675567206638321, 0.84115259521814, 0.953014404142224], rtol=1e-12

@@ -75,13 +75,13 @@ def test_absent_markers_are_dropped_with_warning(toy_dense):
     np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
 
 
-def test_duplicated_markers_count_twice_like_r(toy_dense):
-    # R indexes expDat[markers, ] so a repeated marker contributes twice; the mouse S and G2M lists share E2f8.
-    # g0 contributes [0.25, 0, 0, 0.25] on top of RAW.
-    psf.run_stemFinder(toy_dense, markers=["g0", "g0", "g1"])
+def test_repeated_markers_count_once(toy_dense):
+    # R counts a repeated marker twice (expDat[markers, ]), which would add g0's [0.25, 0, 0, 0.25] to RAW again
+    with pytest.warns(UserWarning, match="g0"):
+        psf.run_stemFinder(toy_dense, markers=["g0", "g0", "g1"])
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], [0.5, 0.0, 0.25, 0.75])
-    np.testing.assert_allclose(toy_dense.obs["stemFinder"], [1 / 3, 1.0, 2 / 3, 0.0])
+    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemFinder"], INVERTED)
 
 
 def test_no_markers_present_raises(toy_dense):

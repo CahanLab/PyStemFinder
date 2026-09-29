@@ -54,11 +54,15 @@ def binarize_data(data, threshold):
     return (data > threshold).astype(int)
 
 def _genes_present(adata, genes, label):
-    """Return `genes` that are in adata.var_names, warning about any that are absent.
+    """Return the unique `genes` that are in adata.var_names, warning about any that are absent or repeated.
 
-    Repeated genes are kept, as in R, so they are counted once per occurrence.
+    Unlike R, where a repeated marker is counted once per occurrence, each gene is counted once.
     """
     genes = list(genes)
+    repeated = list(dict.fromkeys(g for i, g in enumerate(genes) if g in genes[:i]))
+    if repeated:
+        warnings.warn(f"Repeated {label} are counted once: {', '.join(repeated)}", UserWarning, stacklevel=3)
+    genes = list(dict.fromkeys(genes))
     var_names = set(adata.var_names)
     present = [g for g in genes if g in var_names]
     missing = [g for g in genes if g not in var_names]
@@ -172,8 +176,8 @@ def run_stemFinder(adata, markers, thresh=0.0, method='gini', layer=None, neighb
     Args:
         adata (anndata.AnnData): The annotated data matrix of shape (n_obs, n_vars), with a kNN graph from 
                                  sc.pp.neighbors.
-        markers (list of str): Marker genes. Markers absent from adata.var_names are ignored with a warning. As in 
-                               R, a marker listed twice counts twice.
+        markers (list of str): Marker genes. Markers absent from adata.var_names are ignored with a warning. A 
+                               marker listed twice counts once (in R it counts twice).
         thresh (float, optional): The threshold used to binarize expression for method 'gini'. Defaults to 0.
         method (str, optional): 'gini', 'stdev', or 'variance'. Defaults to 'gini'.
         layer (str, optional): Layer holding the expression to use instead of adata.X. Defaults to None.
