@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pystemfinder"
+dynamic = ["version"]
+description = "Estimate how differentiated single cells are from heterogeneity in cell cycle gene expression (Python port of stemFinder)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Kathleen Noller" },
+    { name = "Patrick Cahan", email = "patrick.cahan@jhmi.edu" },
+]
+requires-python = ">=3.11"
+# Lower bounds are tested by the minimum-versions job in .github/workflows/tests.yml; keep them in sync.
+dependencies = [
+    "anndata>=0.10",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scanpy>=1.10",
+    "scipy>=1.11.1",
+]
+keywords = ["single-cell", "scRNA-seq", "differentiation", "stem cells", "cell cycle", "scanpy", "anndata"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/CahanLab/PyStemFinder"
+Documentation = "https://pystemfinder.readthedocs.io"
+Changelog = "https://github.com/CahanLab/PyStemFinder/blob/main/CHANGELOG.md"
+Issues = "https://github.com/CahanLab/PyStemFinder/issues"
+
+[tool.setuptools]
+packages = ["pystemfinder"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pystemfinder._version.__version__" }
+
+[tool.setuptools.package-data]
+pystemfinder = ["data/*.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

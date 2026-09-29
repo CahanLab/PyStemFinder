@@ -5,9 +5,23 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
-## [Unreleased]
+## [0.5.0] - 2026-09-29
+
+First release on PyPI: `pip install pystemfinder`.
+
+### Added
+- Packaging with `pyproject.toml` (replaces `setup.py`). Pushing a version
+  tag builds the package, tests the wheel, and publishes it to PyPI through
+  trusted publishing (`.github/workflows/publish.yml`).
+- Lower bounds on the dependencies (anndata 0.10, numpy 1.26, pandas 2.1,
+  scanpy 1.10, scipy 1.11.1), tested in CI along with Python 3.11-3.14 and
+  a check that the built package is valid.
 
 ### Changed
+- **Breaking:** requires Python 3.11 or newer. Python 3.10 reaches its end of
+  life in October 2026, and current scanpy, anndata, numpy, and scipy
+  releases require 3.12; on 3.11, pip installs the last releases that support
+  it, which CI tests.
 - **Breaking:** the package is imported as `pystemfinder` (was `PyStemFinder`),
   and the API uses lowercase, scanpy-style names and parameters:
 
@@ -156,6 +170,7 @@ minor releases may change the API.
 Initial Python port: `run_stemFinder` (Gini method), `diffOmeter`, toy data
 generator, and preprocessing helpers.
 
+[0.5.0]: https://github.com/CahanLab/PyStemFinder/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.0...v0.3.1

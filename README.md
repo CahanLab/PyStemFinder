@@ -16,9 +16,13 @@ bone marrow data).
 
 ## Installation
 
+pystemfinder requires Python 3.11 or newer.
+
 ```bash
-pip install git+https://github.com/CahanLab/PyStemFinder.git
+pip install pystemfinder
 ```
+
+The development version installs with `pip install git+https://github.com/CahanLab/PyStemFinder.git`.
 
 To run the tutorials or the tests, clone the repository and install into the conda environment
 defined in `environment.yml`:

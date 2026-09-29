@@ -1,0 +1,5 @@
+# Ship the tests (including the R reference data) in the sdist so that downstream
+# packagers, such as conda-forge, can run them.
+include CHANGELOG.md
+graft tests
+global-exclude *.py[cod] __pycache__
