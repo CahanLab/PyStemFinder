@@ -1,5 +1,8 @@
 # PyStemFinder
 
+[![tests](https://github.com/CahanLab/PyStemFinder/actions/workflows/tests.yml/badge.svg)](https://github.com/CahanLab/PyStemFinder/actions/workflows/tests.yml)
+[![docs](https://readthedocs.org/projects/pystemfinder/badge/?version=latest)](https://pystemfinder.readthedocs.io/en/latest/)
+
 PyStemFinder estimates how far single cells have progressed through differentiation from
 scRNA-seq data. Less differentiated cells vary more in their expression of cell cycle genes than
 their neighbors do, and stemFinder scores that heterogeneity within each cell's k-nearest-neighbor
@@ -51,7 +54,7 @@ With ground truth differentiation stages in `adata.obs["Ground_truth"]` and cell
 `adata.obs["Phenotype"]`, `psf.compute_performance_single(adata)` and `psf.pct_recover(adata)`
 benchmark the scores as in the R package.
 
-The notebooks in `docs/notebooks` walk through a toy dataset (`quickstart.ipynb`) and reproduce the
+The [documentation](https://pystemfinder.readthedocs.io) includes notebooks (in `docs/notebooks`) that walk through a toy dataset (`quickstart.ipynb`) and reproduce the
 R vignette (`benchmarking.ipynb`).
 
 ## Differences from the R package
@@ -70,6 +73,10 @@ R vignette (`benchmarking.ipynb`).
 See [CHANGELOG.md](CHANGELOG.md) for details.
 
 ## Documentation
+
+https://pystemfinder.readthedocs.io
+
+To build the docs locally:
 
 ```bash
 pip install -r docs/requirements.txt
