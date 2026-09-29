@@ -13,10 +13,15 @@ bone marrow data).
 
 ## Installation
 
-Clone the repository, create the conda environment, and install the package into it:
+```bash
+pip install git+https://github.com/CahanLab/PyStemFinder.git
+```
+
+To run the tutorials or the tests, clone the repository and install into the conda environment
+defined in `environment.yml`:
 
 ```bash
-git clone https://github.com/pcahan1/PyStemFinder.git
+git clone https://github.com/CahanLab/PyStemFinder.git
 cd PyStemFinder
 conda env create -f environment.yml
 conda activate pystemfinder
@@ -77,3 +82,7 @@ pytest
 
 Noller K, Cahan P. Cell cycle expression heterogeneity predicts degree of differentiation.
 *Briefings in Bioinformatics* 25(6):bbae536 (2024). https://doi.org/10.1093/bib/bbae536
+
+## License
+
+MIT; see [LICENSE](LICENSE).

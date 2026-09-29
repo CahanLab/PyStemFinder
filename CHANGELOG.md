@@ -5,6 +5,18 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
+## [0.3.2] - 2026-09-29
+
+### Added
+- MIT license (`LICENSE`).
+- GitHub Actions workflow running the tests (Python 3.10 and 3.12) and a
+  strict docs build.
+
+### Changed
+- The repository moved to https://github.com/CahanLab/PyStemFinder and is
+  public, so PyStemFinder can be installed with
+  `pip install git+https://github.com/CahanLab/PyStemFinder.git`.
+
 ## [0.3.1] - 2026-09-28
 
 ### Added
@@ -101,8 +113,9 @@ minor releases may change the API.
 Initial Python port: `run_stemFinder` (Gini method), `diffOmeter`, toy data
 generator, and preprocessing helpers.
 
-[0.3.1]: https://github.com/pcahan1/PyStemFinder/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.1...v0.3.0
-[0.2.1]: https://github.com/pcahan1/PyStemFinder/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/pcahan1/PyStemFinder/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/pcahan1/PyStemFinder/releases/tag/v0.1.0
+[0.3.2]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/CahanLab/PyStemFinder/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/CahanLab/PyStemFinder/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/CahanLab/PyStemFinder/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/CahanLab/PyStemFinder/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/CahanLab/PyStemFinder/releases/tag/v0.1.0
