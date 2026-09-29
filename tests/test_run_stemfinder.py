@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import scanpy as sc
 
-import PyStemFinder as psf
+import pystemfinder as psf
 from conftest import knn_graph
 
 MARKERS = ["g0", "g1"]
@@ -14,18 +14,18 @@ INVERTED = [0.5, 1.0, 0.5, 0.0]  # 1 - RAW / max(RAW)
 
 
 def test_scores_match_hand_computed_values(toy):
-    psf.run_stemFinder(toy, markers=MARKERS)
+    psf.stemfinder(toy, markers=MARKERS)
 
-    np.testing.assert_allclose(toy.obs["stemFinder_raw"], RAW)
-    np.testing.assert_allclose(toy.obs["stemFinder"], INVERTED)
+    np.testing.assert_allclose(toy.obs["stemfinder_raw"], RAW)
+    np.testing.assert_allclose(toy.obs["stemfinder"], INVERTED)
 
 
 def test_threshold_controls_binarization(toy_dense):
     # at 1.5, g0 -> [1, 1, 0, 0] and g1 -> [0, 0, 1, 0]
-    psf.run_stemFinder(toy_dense, markers=MARKERS, thresh=1.5)
+    psf.stemfinder(toy_dense, markers=MARKERS, threshold=1.5)
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], [0.5, 0.25, 0.25, 0.5])
-    np.testing.assert_allclose(toy_dense.obs["stemFinder"], [0.0, 0.5, 0.5, 0.0])
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], [0.5, 0.25, 0.25, 0.5])
+    np.testing.assert_allclose(toy_dense.obs["stemfinder"], [0.0, 0.5, 0.5, 0.0])
 
 
 def test_neighbors_at_distance_zero_still_count(toy_dense):
@@ -36,18 +36,18 @@ def test_neighbors_at_distance_zero_still_count(toy_dense):
         values={0: [1.0, 1.0], 1: [0.0, 1.0], 2: [1.0, 1.0], 3: [1.0, 1.0]},
     )
 
-    psf.run_stemFinder(toy_dense, markers=MARKERS)
+    psf.stemfinder(toy_dense, markers=MARKERS)
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], RAW)
 
 
 def test_self_edges_in_graph_are_ignored(toy_dense):
     # Seurat-style kNN graphs list each cell as its own neighbor
     toy_dense.obsp["distances"] = knn_graph({0: [0, 1, 2], 1: [0, 1, 3], 2: [1, 2, 3], 3: [0, 2, 3]}, n_obs=4)
 
-    psf.run_stemFinder(toy_dense, markers=MARKERS)
+    psf.stemfinder(toy_dense, markers=MARKERS)
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], RAW)
 
 
 def test_uses_graph_named_by_neighbors_key(toy_dense):
@@ -56,37 +56,45 @@ def test_uses_graph_named_by_neighbors_key(toy_dense):
     toy_dense.obsp["alt_distances"] = graph
     toy_dense.uns["alt"] = {"distances_key": "alt_distances"}
 
-    psf.run_stemFinder(toy_dense, markers=MARKERS, neighbors_key="alt")
+    psf.stemfinder(toy_dense, markers=MARKERS, neighbors_key="alt")
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], RAW)
+
+
+def test_key_added_names_the_columns(toy_dense):
+    psf.stemfinder(toy_dense, markers=MARKERS, key_added="sf_cc")
+
+    np.testing.assert_allclose(toy_dense.obs["sf_cc_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["sf_cc"], INVERTED)
+    assert "stemfinder" not in toy_dense.obs
 
 
 def test_missing_neighbor_graph_raises(toy_dense):
     del toy_dense.obsp["distances"]
 
     with pytest.raises(ValueError, match="sc.pp.neighbors"):
-        psf.run_stemFinder(toy_dense, markers=MARKERS)
+        psf.stemfinder(toy_dense, markers=MARKERS)
 
 
 def test_absent_markers_are_dropped_with_warning(toy_dense):
     with pytest.warns(UserWarning, match="not_a_gene"):
-        psf.run_stemFinder(toy_dense, markers=MARKERS + ["not_a_gene"])
+        psf.stemfinder(toy_dense, markers=MARKERS + ["not_a_gene"])
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], RAW)
 
 
 def test_repeated_markers_count_once(toy_dense):
     # R counts a repeated marker twice (expDat[markers, ]), which would add g0's [0.25, 0, 0, 0.25] to RAW again
     with pytest.warns(UserWarning, match="g0"):
-        psf.run_stemFinder(toy_dense, markers=["g0", "g0", "g1"])
+        psf.stemfinder(toy_dense, markers=["g0", "g0", "g1"])
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], RAW)
-    np.testing.assert_allclose(toy_dense.obs["stemFinder"], INVERTED)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder"], INVERTED)
 
 
 def test_no_markers_present_raises(toy_dense):
     with pytest.raises(ValueError, match="markers"):
-        psf.run_stemFinder(toy_dense, markers=["x", "y"])
+        psf.stemfinder(toy_dense, markers=["x", "y"])
 
 
 def test_matches_literal_translation_of_r_code():
@@ -96,7 +104,7 @@ def test_matches_literal_translation_of_r_code():
     sc.pp.neighbors(adata, n_neighbors=k, use_rep="X")
     markers = list(adata.var_names[:8])
 
-    psf.run_stemFinder(adata, markers=markers)
+    psf.stemfinder(adata, markers=markers)
 
     # R/run_stemFinder.R (method = 'gini'); Seurat's kNN graph includes the cell itself
     exp_dat = adata[:, markers].X
@@ -109,5 +117,5 @@ def test_matches_literal_translation_of_r_code():
         p_g = n_match / (k - 1)
         expected.append(np.sum(p_g * (1 - p_g)))
     expected = np.array(expected)
-    np.testing.assert_allclose(adata.obs["stemFinder_raw"], expected)
-    np.testing.assert_allclose(adata.obs["stemFinder"], 1 - expected / expected.max())
+    np.testing.assert_allclose(adata.obs["stemfinder_raw"], expected)
+    np.testing.assert_allclose(adata.obs["stemfinder"], 1 - expected / expected.max())

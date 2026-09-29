@@ -12,7 +12,7 @@ from pathlib import Path
 project = 'PyStemFinder'
 copyright = '2023-2026, Patrick Cahan, Kathleen Noller'
 author = 'Patrick Cahan, Kathleen Noller'
-_version_file = Path(__file__).parent.parent / 'PyStemFinder' / '_version.py'
+_version_file = Path(__file__).parent.parent / 'pystemfinder' / '_version.py'
 release = re.search(r'__version__ = "(.+)"', _version_file.read_text()).group(1)
 version = release
 
@@ -36,6 +36,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'pandas': ('https://pandas.pydata.org/docs', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy', None),
     'anndata': ('https://anndata.readthedocs.io/en/stable', None),
     'scanpy': ('https://scanpy.readthedocs.io/en/stable', None),
 }

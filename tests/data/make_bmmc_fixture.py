@@ -4,6 +4,8 @@ Run export_bmmc_reference.R first, then:
 
     python make_bmmc_fixture.py <R export dir> <bmmc_competitor_results.csv> <out .h5ad>
 
+Run it with the oldest supported anndata (0.10): newer versions read older .h5ad encodings, but not vice versa.
+
 The competitor scores are https://cnobjects.s3.amazonaws.com/stemFinder/bmmc_competitor_results.csv.
 
 Contents (3427 Tabula Muris bone marrow cells x 91 mouse S/G2M cell cycle genes):

@@ -1,6 +1,6 @@
 import pytest
 
-import PyStemFinder as psf
+import pystemfinder as psf
 
 
 def test_mouse_cell_cycle_phases():

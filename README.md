@@ -36,37 +36,46 @@ pip install -e .
 ```python
 import numpy as np
 import scanpy as sc
-import PyStemFinder as psf
+import pystemfinder as psf
 
 # adata: raw counts (cells x genes)
 markers = psf.cell_cycle_genes("mouse")  # S and G2M phase genes; also "human", "celegans"
 
-# normalize, log-transform, find highly variable genes (excluding the markers), scale all genes, PCA
-adata = psf.sf_norm_hvg_scale_pca(adata, blacklist=markers, gene_scale=True, n_comps=50)
+# normalize, log-transform, scale, and run PCA, leaving the markers out of the highly variable genes
+psf.recipe_stemfinder(adata, exclude=markers, n_comps=50)
 sc.pp.neighbors(adata, n_neighbors=int(round(np.sqrt(adata.n_obs))), n_pcs=32)
 
-psf.run_stemFinder(adata, markers)
-# adata.obs["stemFinder_raw"]: higher = less differentiated
-# adata.obs["stemFinder"]:     1 - raw / max(raw), oriented like pseudotime
+psf.stemfinder(adata, markers)
+# adata.obs["stemfinder_raw"]: higher = less differentiated
+# adata.obs["stemfinder"]:     1 - raw / max(raw), oriented like pseudotime
 ```
 
 With ground truth differentiation stages in `adata.obs["Ground_truth"]` and cell types in
-`adata.obs["Phenotype"]`, `psf.compute_performance_single(adata)` and `psf.pct_recover(adata)`
-benchmark the scores as in the R package.
+`adata.obs["Phenotype"]`, `psf.compute_performance(adata)` and `psf.pct_recover(adata)` benchmark the
+scores as in the R package.
 
-The [documentation](https://pystemfinder.readthedocs.io) includes notebooks (in `docs/notebooks`) that walk through a toy dataset (`quickstart.ipynb`) and reproduce the
-R vignette (`benchmarking.ipynb`).
+The [documentation](https://pystemfinder.readthedocs.io) includes notebooks (in `docs/notebooks`) that
+walk through a toy dataset (`quickstart.ipynb`) and reproduce the R vignette (`benchmarking.ipynb`).
 
-## Differences from the R package
+## Coming from the R package
 
-- `compute_performance_single` computes the AUC over every pair of most and least differentiated
-  cells. R's `auc_probability` compares only the first most differentiated cell with the least
-  differentiated ones.
+| R stemFinder | pystemfinder |
+| --- | --- |
+| `run_stemFinder(adata, nn, k, thresh, markers, method)` | `stemfinder(adata, markers, threshold, method)` |
+| `compute_performance_single(adata, competitor, comp.inverted)` | `compute_performance(adata, competitor_key=..., competitor_inverted=...)` |
+| `pct_recover(adata)` | `pct_recover(adata)` |
+| `gene_set_score(gene.set, adata)` | `gene_set_score(adata, genes)` |
+| `c(s_genes_mouse, g2m_genes_mouse)`, `mmTFs` | `cell_cycle_genes("mouse")`, `transcription_factors("mouse")` |
+
+Differences:
+
+- `compute_performance` computes the AUC over every pair of most and least differentiated cells. R's
+  `auc_probability` compares only the first most differentiated cell with the least differentiated ones.
 - The phenotype-level correlation is Spearman, as its name says; R's uses Pearson. Pass
   `pheno_method="pearson"` to reproduce R's value.
-- `run_stemFinder` reads the neighborhood size from the kNN graph, so it takes no `k` argument.
+- `stemfinder` reads the neighborhood size from the kNN graph, so it takes no `k` argument.
 - E2f8 (E2F8 in human) is an S phase gene only. The R package also lists it under G2M, so the R
-  vignette counts it twice, and R counts any repeated marker once per occurrence; PyStemFinder counts
+  vignette counts it twice, and R counts any repeated marker once per occurrence; pystemfinder counts
   each marker once. Scores on the vignette's data therefore differ slightly from the published ones
   (rank correlation 0.9999).
 

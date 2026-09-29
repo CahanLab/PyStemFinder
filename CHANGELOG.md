@@ -5,6 +5,33 @@ All notable changes to PyStemFinder are documented here. The format follows
 [Semantic Versioning](https://semver.org/). While the version is below 1.0,
 minor releases may change the API.
 
+## [Unreleased]
+
+### Changed
+- **Breaking:** the package is imported as `pystemfinder` (was `PyStemFinder`),
+  and the API uses lowercase, scanpy-style names and parameters:
+
+  | 0.4 | 0.5 |
+  | --- | --- |
+  | `run_stemFinder(adata, markers, thresh=...)` | `stemfinder(adata, markers, threshold=..., key_added='stemfinder')` |
+  | `.obs['stemFinder_raw']`, `.obs['stemFinder']` | `.obs['stemfinder_raw']`, `.obs['stemfinder']` |
+  | `diffOmeter(adata, genes, threshold)` | `diffometer(adata, genes, threshold=0.0, key_added='diffometer')` |
+  | `compute_performance_single(adata, score_key='stemFinder')` | `compute_performance(adata, score_key='stemfinder')` |
+  | `count_high_expr_genes(adata, genes, threshold, column_name)` | `count_expressed_genes(adata, genes, threshold=0.0, key_added=...)` |
+  | `sf_norm_hvg_scale_pca(adata, blacklist, gene_scale=False)` (returns a copy) | `recipe_stemfinder(adata, exclude=..., scale=True, copy=False)` (in place) |
+  | `generate_scRNAseq_test_data(...)` | `simulate_data(...)` |
+  | `binarize_data`, `binary_gini_impurity` | `binarize`, `gini_impurity` |
+
+- `stemfinder`, `diffometer`, `gene_set_score`, and `count_expressed_genes`
+  take `key_added` to name their `.obs` columns, and `diffometer` and
+  `count_expressed_genes` take `layer`. `count_expressed_genes` returns None
+  instead of `adata` and warns about absent genes, like the other functions.
+- `recipe_stemfinder` scales every gene by default, since `stemfinder` needs
+  scaled markers, and modifies `adata` in place unless `copy=True`.
+- The module is split into `scoring`, `performance`, `genesets`,
+  `preprocessing`, and `simulate`; everything is available from the top-level
+  `pystemfinder` namespace.
+
 ## [0.4.0] - 2026-09-29
 
 ### Changed

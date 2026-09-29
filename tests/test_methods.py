@@ -1,9 +1,9 @@
-"""run_stemFinder(method='stdev' | 'variance'): R sums, over markers, the sample sd / variance of expression
+"""stemfinder(method='stdev' | 'variance'): R sums, over markers, the sample sd / variance of expression
 across each cell's kNN neighborhood (Seurat's graph, which includes the cell itself)."""
 import numpy as np
 import pytest
 
-import PyStemFinder as psf
+import pystemfinder as psf
 
 MARKERS = ["g0", "g1"]
 # Hand-derived from the toy data in conftest.py. Neighborhoods including self:
@@ -16,28 +16,28 @@ STDEV_RAW = [np.sqrt(7 / 3) + 1, 1 + np.sqrt(1 / 3), np.sqrt(7 / 3) + 1, 1 + np.
 
 
 def test_variance(toy):
-    psf.run_stemFinder(toy, markers=MARKERS, method="variance")
+    psf.stemfinder(toy, markers=MARKERS, method="variance")
 
-    np.testing.assert_allclose(toy.obs["stemFinder_raw"], VARIANCE_RAW)
-    np.testing.assert_allclose(toy.obs["stemFinder"], [0.0, 0.6, 0.0, 0.3], atol=1e-12)
+    np.testing.assert_allclose(toy.obs["stemfinder_raw"], VARIANCE_RAW)
+    np.testing.assert_allclose(toy.obs["stemfinder"], [0.0, 0.6, 0.0, 0.3], atol=1e-12)
 
 
 def test_stdev(toy):
-    psf.run_stemFinder(toy, markers=MARKERS, method="stdev")
+    psf.stemfinder(toy, markers=MARKERS, method="stdev")
 
-    np.testing.assert_allclose(toy.obs["stemFinder_raw"], STDEV_RAW)
-    np.testing.assert_allclose(toy.obs["stemFinder"], 1 - np.array(STDEV_RAW) / max(STDEV_RAW), atol=1e-12)
+    np.testing.assert_allclose(toy.obs["stemfinder_raw"], STDEV_RAW)
+    np.testing.assert_allclose(toy.obs["stemfinder"], 1 - np.array(STDEV_RAW) / max(STDEV_RAW), atol=1e-12)
 
 
 def test_layer_is_used_instead_of_x(toy_dense):
     toy_dense.layers["lognorm"] = toy_dense.X.copy()
     toy_dense.X = np.zeros_like(toy_dense.X)
 
-    psf.run_stemFinder(toy_dense, markers=MARKERS, method="variance", layer="lognorm")
+    psf.stemfinder(toy_dense, markers=MARKERS, method="variance", layer="lognorm")
 
-    np.testing.assert_allclose(toy_dense.obs["stemFinder_raw"], VARIANCE_RAW)
+    np.testing.assert_allclose(toy_dense.obs["stemfinder_raw"], VARIANCE_RAW)
 
 
 def test_invalid_method_raises(toy_dense):
     with pytest.raises(ValueError, match="method"):
-        psf.run_stemFinder(toy_dense, markers=MARKERS, method="entropy")
+        psf.stemfinder(toy_dense, markers=MARKERS, method="entropy")

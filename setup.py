@@ -4,12 +4,12 @@ import re
 from setuptools import setup
 
 here = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(here, 'PyStemFinder', '_version.py')) as f:
+with open(os.path.join(here, 'pystemfinder', '_version.py')) as f:
     version = re.search(r'__version__ = "(.+)"', f.read()).group(1)
 with open(os.path.join(here, 'README.md')) as f:
     long_description = f.read()
 
-setup(name='PyStemFinder',
+setup(name='pystemfinder',
       version=version,
       description='Tools to infer extent of differentiation and cell fate potential from single cell omics data',
       long_description=long_description,
@@ -18,8 +18,8 @@ setup(name='PyStemFinder',
       author='Kathleen Noller, Patrick Cahan',
       author_email='patrick.cahan@jhmi.edu',
       license='MIT',
-      packages=['PyStemFinder'],
-      package_data={'PyStemFinder': ['data/*.txt']},
+      packages=['pystemfinder'],
+      package_data={'pystemfinder': ['data/*.txt']},
       python_requires='>=3.9',
       install_requires=[
           'pandas',

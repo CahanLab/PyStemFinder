@@ -1,20 +1,20 @@
 API reference
 =============
 
-.. currentmodule:: PyStemFinder
+.. currentmodule:: pystemfinder
 
 Scoring
 -------
 
-.. autofunction:: run_stemFinder
-.. autofunction:: diffOmeter
+.. autofunction:: stemfinder
+.. autofunction:: diffometer
 .. autofunction:: gene_set_score
-.. autofunction:: count_high_expr_genes
+.. autofunction:: count_expressed_genes
 
 Benchmarking
 ------------
 
-.. autofunction:: compute_performance_single
+.. autofunction:: compute_performance
 .. autofunction:: pct_recover
 
 Gene lists
@@ -23,10 +23,14 @@ Gene lists
 .. autofunction:: cell_cycle_genes
 .. autofunction:: transcription_factors
 
-Preprocessing and toy data
---------------------------
+Preprocessing
+-------------
 
-.. autofunction:: sf_norm_hvg_scale_pca
-.. autofunction:: generate_scRNAseq_test_data
-.. autofunction:: binarize_data
-.. autofunction:: binary_gini_impurity
+.. autofunction:: recipe_stemfinder
+
+Toy data and helpers
+--------------------
+
+.. autofunction:: simulate_data
+.. autofunction:: binarize
+.. autofunction:: gini_impurity

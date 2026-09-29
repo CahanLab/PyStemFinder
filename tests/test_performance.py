@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import PyStemFinder as psf
+import pystemfinder as psf
 
 # Ground truth: higher = more differentiated. Phenotype means: A (0.3, 1), B (0.2, 2), C (0.9, 3), D (0.625, 4).
 GROUND_TRUTH = [1, 1, 2, 3, 4, 4]
@@ -22,47 +22,47 @@ AUC = 0.75
 def _adata(scores=SCORES, ground_truth=GROUND_TRUTH, **obs):
     n = len(scores)
     df = pd.DataFrame(
-        {"stemFinder": scores, "Ground_truth": ground_truth, "Phenotype": PHENOTYPE[:n], **obs},
+        {"stemfinder": scores, "Ground_truth": ground_truth, "Phenotype": PHENOTYPE[:n], **obs},
         index=[f"c{i}" for i in range(n)],
     )
     return anndata.AnnData(np.zeros((n, 1)), obs=df)
 
 
 def test_performance_metrics():
-    result = psf.compute_performance_single(_adata())
+    result = psf.compute_performance(_adata())
 
     assert list(result.columns) == ["Spearman_SingleCell", "Spearman_Pheno", "AUC"]
-    np.testing.assert_allclose(result.loc["stemFinder"], [SPEARMAN_SINGLE_CELL, SPEARMAN_PHENO, AUC])
+    np.testing.assert_allclose(result.loc["stemfinder"], [SPEARMAN_SINGLE_CELL, SPEARMAN_PHENO, AUC])
 
 
 def test_auc_uses_every_positive_cell():
     # R's auc_probability compares only the first positive cell (0.3), which gives 0.5 here
-    result = psf.compute_performance_single(_adata())
+    result = psf.compute_performance(_adata())
 
-    assert result.loc["stemFinder", "AUC"] == pytest.approx(0.75)
+    assert result.loc["stemfinder", "AUC"] == pytest.approx(0.75)
 
 
 def test_auc_gives_half_credit_for_ties():
     # positives [0.5, 0.9] vs negatives [0.2, 0.5]: 3 wins + 1 tie out of 4 pairs
     adata = _adata(scores=[0.2, 0.5, 0.5, 0.9], ground_truth=[1, 1, 2, 2])
 
-    result = psf.compute_performance_single(adata)
+    result = psf.compute_performance(adata)
 
-    assert result.loc["stemFinder", "AUC"] == pytest.approx(0.875)
+    assert result.loc["stemfinder", "AUC"] == pytest.approx(0.875)
 
 
 def test_pearson_phenotype_correlation_reproduces_r():
-    result = psf.compute_performance_single(_adata(), pheno_method="pearson")
+    result = psf.compute_performance(_adata(), pheno_method="pearson")
 
-    assert result.loc["stemFinder", "Spearman_Pheno"] == pytest.approx(PEARSON_PHENO)
+    assert result.loc["stemfinder", "Spearman_Pheno"] == pytest.approx(PEARSON_PHENO)
 
 
 def test_competitor_scores_are_inverted_unless_already_inverted():
     competitor = 1 - np.array(SCORES)  # opposite orientation to stemFinder
     adata = _adata(ccat=competitor)
 
-    inverted = psf.compute_performance_single(adata, competitor_key="ccat")
-    as_is = psf.compute_performance_single(adata, competitor_key="ccat", competitor_inverted=True)
+    inverted = psf.compute_performance(adata, competitor_key="ccat")
+    as_is = psf.compute_performance(adata, competitor_key="ccat", competitor_inverted=True)
 
     # 1 - x / max(x) of the competitor ranks cells exactly like stemFinder
     np.testing.assert_allclose(inverted.loc["ccat"], [SPEARMAN_SINGLE_CELL, SPEARMAN_PHENO, AUC])
@@ -71,9 +71,9 @@ def test_competitor_scores_are_inverted_unless_already_inverted():
 
 def test_custom_keys():
     adata = _adata()
-    adata.obs = adata.obs.rename(columns={"stemFinder": "score", "Ground_truth": "gt", "Phenotype": "celltype"})
+    adata.obs = adata.obs.rename(columns={"stemfinder": "score", "Ground_truth": "gt", "Phenotype": "celltype"})
 
-    result = psf.compute_performance_single(adata, score_key="score", ground_truth_key="gt", phenotype_key="celltype")
+    result = psf.compute_performance(adata, score_key="score", ground_truth_key="gt", phenotype_key="celltype")
 
     np.testing.assert_allclose(result.loc["score"], [SPEARMAN_SINGLE_CELL, SPEARMAN_PHENO, AUC])
 
